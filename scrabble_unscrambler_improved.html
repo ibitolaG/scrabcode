@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrabble Word Unscrambler</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6B5B95;
+            --secondary: #F8F6F1;
+            --accent: #E8D5C4;
+            --success: #A8D8D8;
+            --success-dark: #7DB3B3;
+            --text-dark: #2D2D2D;
+            --text-light: #FFFFFF;
+            --border: #D4C4B0;
+            --pastel-blue: #D9E8F7;
+            --pastel-green: #D9F7E8;
+            --pastel-pink: #F7D9D9;
+            --pastel-yellow: #F7F3D9;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Trebuchet MS', sans-serif;
+            background: linear-gradient(135deg, #F5F0E8 0%, #E8DFD5 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            color: var(--text-dark);
+            padding-top: 40px;
+        }
+
+        .container {
+            background: var(--secondary);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            max-width: 700px;
+            width: 100%;
+            padding: 45px;
+            border: 1px solid var(--border);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.8em;
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-weight: 800;
+        }
+
+        .subtitle {
+            color: var(--text-dark);
+            opacity: 0.7;
+            font-size: 0.95em;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            background: white;
+            color: var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        select {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            cursor: pointer;
+        }
+
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: var(--success-dark);
+            box-shadow: 0 0 0 3px rgba(168, 216, 216, 0.15);
+        }
+
+        .hint {
+            font-size: 0.8em;
+            color: var(--text-dark);
+            opacity: 0.6;
+            margin-top: 6px;
+        }
+
+        /* Collapsible Section */
+        .collapsible-section {
+            margin: 20px 0;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .collapsible-header {
+            background: linear-gradient(135deg, var(--pastel-blue) 0%, #E8F0F8 100%);
+            padding: 14px 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.9em;
+            user-select: none;
+            transition: all 0.3s ease;
+        }
+
+        .collapsible-header:hover {
+            background: linear-gradient(135deg, #D0E0F0 0%, #E0E8F8 100%);
+        }
+
+        .collapsible-toggle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            transition: transform 0.3s ease;
+        }
+
+        .collapsible-toggle.open {
+            transform: rotate(180deg);
+        }
+
+        .collapsible-content {
+            background: var(--pastel-blue);
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+
+        .collapsible-content.open {
+            padding: 20px;
+            max-height: 1000px;
+        }
+
+        .filter-option {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid var(--success);
+        }
+
+        .filter-option:last-child {
+            margin-bottom: 0;
+        }
+
+        .filter-option input[type="checkbox"] {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--success-dark);
+        }
+
+        .filter-label-inline {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .filter-input {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+
+        .position-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+            gap: 8px;
+            margin-top: 10px;
+            margin-left: 20px;
+        }
+
+        .position-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .position-item label {
+            font-size: 0.7em;
+            margin-bottom: 4px;
+        }
+
+        .position-item input {
+            font-size: 0.85em;
+            text-align: center;
+            padding: 8px 10px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin: 25px 0;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px 20px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-family: inherit;
+        }
+
+        #searchBtn {
+            background: linear-gradient(135deg, var(--success) 0%, var(--success-dark) 100%);
+            color: white;
+            border-color: var(--success-dark);
+        }
+
+        #searchBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(125, 179, 179, 0.25);
+        }
+
+        #searchBtn:active {
+            transform: translateY(0);
+        }
+
+        #clearBtn {
+            background: white;
+            color: var(--primary);
+            border-color: var(--border);
+        }
+
+        #clearBtn:hover {
+            background: var(--pastel-pink);
+        }
+
+        .error-container, .status-container {
+            margin-bottom: 20px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95em;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .error {
+            background: #FFE5E5;
+            color: #C00;
+            border: 1px solid #FF9999;
+        }
+
+        .status {
+            background: #E5F5FF;
+            color: #0066CC;
+            border: 1px solid #99D7FF;
+        }
+
+        .stats {
+            display: none;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-item {
+            background: linear-gradient(135deg, var(--pastel-yellow) 0%, #F5F0E8 100%);
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 2.2em;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            display: block;
+            font-size: 0.85em;
+            color: var(--text-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+        }
+
+        .length-filter {
+            display: none;
+            background: var(--pastel-green);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 20px 0;
+            border: 1px solid rgba(125, 179, 179, 0.3);
+        }
+
+        .filter-label {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .filter-btn {
+            padding: 8px 12px;
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85em;
+            flex: 0 0 auto;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--success-dark);
+        }
+
+        .filter-btn.active {
+            background: var(--success);
+            border-color: var(--success-dark);
+            color: white;
+        }
+
+        .results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .result-item {
+            background: white;
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid var(--border);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            min-height: 80px;
+        }
+
+        .result-item:hover {
+            background: var(--pastel-green);
+            border-color: var(--success-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(168, 216, 216, 0.2);
+        }
+
+        .result-word {
+            font-weight: 800;
+            color: var(--primary);
+            font-size: 1.1em;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+        }
+
+        .result-points {
+            font-size: 0.8em;
+            color: var(--text-dark);
+            opacity: 0.7;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--text-dark);
+            opacity: 0.6;
+        }
+
+        .empty-state svg {
+            width: 50px;
+            height: 50px;
+            color: var(--primary);
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .loading {
+            grid-column: 1 / -1;
+            padding: 40px 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .spinner {
+            border: 3px solid rgba(107, 91, 149, 0.1);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .position-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .results {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎲 Scrabble</h1>
+            <p class="subtitle">Find all possible words from your tiles</p>
+        </div>
+
+        <div id="errorContainer"></div>
+        <div id="statusContainer"></div>
+
+        <!-- Main Input Section -->
+        <div class="input-group">
+            <label for="tiles">Your Tiles</label>
+            <input type="text" id="tiles" placeholder="Enter letters (use ? for blanks)" maxlength="20">
+            <div class="hint">Type letters A-Z or use ? for blank tiles</div>
+        </div>
+
+        <div class="input-group">
+            <label for="dictionarySelect">Dictionary</label>
+            <select id="dictionarySelect">
+                <option value="sowpods">SOWPODS/CSW (International)</option>
+                <option value="twl">TWL/NWL (North America)</option>
+            </select>
+            <div class="hint">Choose your Scrabble dictionary variant</div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="button-group">
+            <button id="searchBtn">🔍 Find Words</button>
+            <button id="clearBtn">Clear All</button>
+        </div>
+
+        <!-- Advanced Filters (Collapsible) -->
+        <div class="collapsible-section">
+            <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                <span>⚙️ Advanced Filters</span>
+                <div class="collapsible-toggle">▼</div>
+            </div>
+            <div class="collapsible-content">
+                <!-- Starting Letters Filter -->
+                <div class="filter-option">
+                    <label class="filter-label-inline">
+                        <input type="checkbox" id="startCheck">
+                        <span>Word Starts With</span>
+                    </label>
+                    <div class="filter-input" style="display: none;">
+                        <input type="text" id="startInput" placeholder="E.g., CAT" maxlength="5">
+                    </div>
+                </div>
+
+                <!-- Ending Letters Filter -->
+                <div class="filter-option">
+                    <label class="filter-label-inline">
+                        <input type="checkbox" id="endCheck">
+                        <span>Word Ends With</span>
+                    </label>
+                    <div class="filter-input" style="display: none;">
+                        <input type="text" id="endInput" placeholder="E.g., ING" maxlength="5">
+                    </div>
+                </div>
+
+                <!-- Position Filter -->
+                <div class="filter-option">
+                    <label class="filter-label-inline">
+                        <input type="checkbox" id="posCheck">
+                        <span>Letter at Position</span>
+                    </label>
+                    <div class="position-grid" id="positionGrid" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats" id="stats">
+            <div class="stat-item">
+                <span class="stat-number" id="wordCount">0</span>
+                <span class="stat-label">Words Found</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="maxPoints">0</span>
+                <span class="stat-label">Top Score</span>
+            </div>
+        </div>
+
+        <!-- Length Filter -->
+        <div class="length-filter" id="lengthFilter">
+            <div class="filter-label">Filter by Length</div>
+            <div class="filter-buttons" id="filterButtons"></div>
+        </div>
+
+        <!-- Results Grid -->
+        <div class="results" id="results">
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <p>Enter your tiles and click Find Words</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SCRABBLE_VALUES = {
+            A:1, B:3, C:3, D:2, E:1, F:4, G:2, H:4, I:1, J:8, K:5, L:1, M:3,
+            N:1, O:1, P:3, Q:10, R:1, S:1, T:1, U:1, V:4, W:4, X:8, Y:4, Z:10
+        };
+
+        const tilesInput = document.getElementById('tiles');
+        const dictionarySelect = document.getElementById('dictionarySelect');
+        const searchBtn = document.getElementById('searchBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const results = document.getElementById('results');
+        const stats = document.getElementById('stats');
+        const errorContainer = document.getElementById('errorContainer');
+        const statusContainer = document.getElementById('statusContainer');
+        const lengthFilter = document.getElementById('lengthFilter');
+        const positionGrid = document.getElementById('positionGrid');
+
+        let wordList = [];
+        let allResults = [];
+        let dictionaryLoaded = false;
+
+        // Collapsible functionality
+        function toggleCollapsible(header) {
+            const content = header.nextElementSibling;
+            const toggle = header.querySelector('.collapsible-toggle');
+            
+            content.classList.toggle('open');
+            toggle.classList.toggle('open');
+        }
+
+        // Show/hide filter inputs when checkboxes change
+        document.getElementById('startCheck').addEventListener('change', (e) => {
+            e.target.parentElement.parentElement.querySelector('.filter-input').style.display = e.target.checked ? 'block' : 'none';
+        });
+
+        document.getElementById('endCheck').addEventListener('change', (e) => {
+            e.target.parentElement.parentElement.querySelector('.filter-input').style.display = e.target.checked ? 'block' : 'none';
+        });
+
+        document.getElementById('posCheck').addEventListener('change', (e) => {
+            positionGrid.style.display = e.target.checked ? 'grid' : 'none';
+        });
+
+        // Initialize position inputs
+        function initPositionInputs() {
+            let html = '';
+            for (let i = 1; i <= 10; i++) {
+                html += `<div class="position-item"><label>Pos ${i}</label><input type="text" class="pos-input" data-pos="${i}" maxlength="1"></div>`;
+            }
+            positionGrid.innerHTML = html;
+        }
+        initPositionInputs();
+
+        // Load dictionary
+        async function loadDictionary() {
+            const dictType = dictionarySelect.value;
+            let url, name;
+
+            if (dictType === 'twl') {
+                url = 'https://raw.githubusercontent.com/nscottlewis/TWL06/master/twl06.txt';
+                name = 'TWL/NWL (North America)';
+            } else {
+                url = 'https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt';
+                name = 'SOWPODS/CSW (International)';
+            }
+
+            try {
+                statusContainer.innerHTML = `<div class="status">📚 Loading ${name}...</div>`;
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Failed to fetch');
+                
+                const text = await response.text();
+                wordList = text.split('\n')
+                    .map(w => w.trim().toUpperCase())
+                    .filter(w => /^[A-Z]{2,}$/.test(w));
+
+                dictionaryLoaded = true;
+                statusContainer.innerHTML = `<div class="status">✅ ${name} loaded (${wordList.length} words)</div>`;
+                results.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg><p>Ready! Enter your tiles and click Find Words</p></div>';
+            } catch (error) {
+                statusContainer.innerHTML = `<div class="error">❌ Could not load dictionary. Check your internet connection.</div>`;
+                dictionaryLoaded = false;
+            }
+        }
+
+        dictionarySelect.addEventListener('change', loadDictionary);
+
+        function calculatePoints(word) {
+            return word.split('').reduce((sum, letter) => sum + (SCRABBLE_VALUES[letter] || 0), 0);
+        }
+
+        function canMakeWord(word, tiles) {
+            const counts = {};
+            const tilesList = tiles.replace(/\?/g, '');
+            
+            for (const char of tilesList) {
+                counts[char] = (counts[char] || 0) + 1;
+            }
+
+            let blanksNeeded = 0;
+            const blanksAvailable = (tiles.match(/\?/g) || []).length;
+
+            for (const char of word) {
+                if (counts[char]) {
+                    counts[char]--;
+                } else if (blanksNeeded < blanksAvailable) {
+                    blanksNeeded++;
+                } else {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function matchesFilters(word) {
+            if (document.getElementById('startCheck').checked && document.getElementById('startInput').value) {
+                if (!word.startsWith(document.getElementById('startInput').value.toUpperCase())) return false;
+            }
+
+            if (document.getElementById('endCheck').checked && document.getElementById('endInput').value) {
+                if (!word.endsWith(document.getElementById('endInput').value.toUpperCase())) return false;
+            }
+
+            if (document.getElementById('posCheck').checked) {
+                const posInputs = document.querySelectorAll('.pos-input');
+                for (const input of posInputs) {
+                    const letter = input.value.toUpperCase();
+                    if (letter && letter !== '?') {
+                        const pos = parseInt(input.dataset.pos) - 1;
+                        if (pos < word.length && word[pos] !== letter) return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        function findWords() {
+            if (!dictionaryLoaded) {
+                errorContainer.innerHTML = '<div class="error">⏳ Dictionary still loading...</div>';
+                return;
+            }
+
+            const tiles = tilesInput.value.toUpperCase().trim();
+            errorContainer.innerHTML = '';
+
+            if (!/^[A-Z?]+$/.test(tiles) || tiles.length === 0) {
+                errorContainer.innerHTML = '<div class="error">❌ Enter letters (A-Z) and ? for blanks</div>';
+                return;
+            }
+
+            results.innerHTML = '<div class="loading"><div class="spinner"></div><p>Searching...</p></div>';
+
+            setTimeout(() => {
+                allResults = wordList
+                    .filter(word => canMakeWord(word, tiles) && matchesFilters(word))
+                    .map(word => ({ word, points: calculatePoints(word), length: word.length }))
+                    .sort((a, b) => b.points - a.points);
+
+                if (allResults.length === 0) {
+                    results.innerHTML = '<div class="empty-state"><p>❌ No words found. Try different filters or tiles!</p></div>';
+                    stats.style.display = 'none';
+                    lengthFilter.style.display = 'none';
+                    return;
+                }
+
+                const lengths = [...new Set(allResults.map(r => r.length))].sort((a, b) => a - b);
+                let filterHTML = `<button class="filter-btn active" data-length="all">All (${allResults.length})</button>`;
+                filterHTML += lengths.map(len => `<button class="filter-btn" data-length="${len}">${len}L (${allResults.filter(r => r.length === len).length})</button>`).join('');
+                
+                document.getElementById('filterButtons').innerHTML = filterHTML;
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        displayResults(btn.dataset.length === 'all' ? null : parseInt(btn.dataset.length));
+                    });
+                });
+
+                displayResults();
+                stats.style.display = 'grid';
+                lengthFilter.style.display = 'block';
+            }, 100);
+        }
+
+        function displayResults(filterLength = null) {
+            const filtered = filterLength ? allResults.filter(r => r.length === filterLength) : allResults;
+            results.innerHTML = filtered.map(r => 
+                `<div class="result-item" title="Click to copy" onclick="copyToClipboard('${r.word}'); event.stopPropagation();">
+                    <span class="result-word">${r.word}</span>
+                    <span class="result-points">${r.points} pts</span>
+                </div>`
+            ).join('');
+
+            document.getElementById('wordCount').textContent = filtered.length;
+            document.getElementById('maxPoints').textContent = filtered[0]?.points || 0;
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Brief visual feedback
+                const feedback = document.createElement('div');
+                feedback.textContent = '✓ Copied!';
+                feedback.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #A8D8D8; color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; z-index: 1000;';
+                document.body.appendChild(feedback);
+                setTimeout(() => feedback.remove(), 1500);
+            });
+        }
+
+        searchBtn.addEventListener('click', findWords);
+        clearBtn.addEventListener('click', () => {
+            tilesInput.value = '';
+            document.getElementById('startInput').value = '';
+            document.getElementById('endInput').value = '';
+            document.querySelectorAll('.pos-input').forEach(i => i.value = '');
+            document.getElementById('startCheck').checked = false;
+            document.getElementById('endCheck').checked = false;
+            document.getElementById('posCheck').checked = false;
+            document.querySelectorAll('.filter-input').forEach(el => el.style.display = 'none');
+            positionGrid.style.display = 'none';
+            results.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg><p>Enter your tiles and click Find Words</p></div>';
+            stats.style.display = 'none';
+            lengthFilter.style.display = 'none';
+            errorContainer.innerHTML = '';
+        });
+
+        tilesInput.addEventListener('keypress', e => { if (e.key === 'Enter') findWords(); });
+
+        // Load dictionary on start
+        loadDictionary();
+    </script>
+</body>
+</html>
